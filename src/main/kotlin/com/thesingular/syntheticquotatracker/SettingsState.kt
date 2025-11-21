@@ -1,7 +1,15 @@
 package com.thesingular.syntheticquotatracker
 
-import com.intellij.openapi.components.*
+import com.intellij.credentialStore.CredentialAttributes
+import com.intellij.credentialStore.Credentials
+import com.intellij.credentialStore.generateServiceName
+import com.intellij.ide.passwordSafe.PasswordSafe
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.State
+import com.intellij.openapi.components.Storage
+import com.intellij.openapi.components.service
 import com.intellij.util.messages.Topic
 
 @Service(Service.Level.APP)
@@ -11,7 +19,6 @@ import com.intellij.util.messages.Topic
 )
 class SettingsState : PersistentStateComponent<SettingsState.State> {
     data class State(
-        var apiToken: String? = null,
         var intervalSeconds: Int = 60,
     )
 
@@ -24,8 +31,14 @@ class SettingsState : PersistentStateComponent<SettingsState.State> {
     }
 
     var apiToken: String?
-        get() = myState.apiToken
-        set(value) { myState.apiToken = value }
+        get() {
+            val credentials = PasswordSafe.instance.get(CREDENTIAL_ATTRIBUTES)
+            return credentials?.getPasswordAsString()
+        }
+        set(value) {
+            val credentials = if (value != null) Credentials(null, value) else null
+            PasswordSafe.instance.set(CREDENTIAL_ATTRIBUTES, credentials)
+        }
 
     var intervalSeconds: Int
         get() = myState.intervalSeconds
@@ -36,6 +49,10 @@ class SettingsState : PersistentStateComponent<SettingsState.State> {
 
         val SETTINGS_CHANGED: Topic<SettingsChangedListener> =
             Topic.create("SyntheticQuotaTrackerSettingsChanged", SettingsChangedListener::class.java)
+
+        private val CREDENTIAL_ATTRIBUTES = CredentialAttributes(
+            generateServiceName("SyntheticQuotaTracker", "apiToken")
+        )
     }
 }
 
