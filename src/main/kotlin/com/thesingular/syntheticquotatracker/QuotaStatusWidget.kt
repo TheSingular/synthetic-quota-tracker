@@ -62,8 +62,8 @@ class QuotaStatusWidget : CustomStatusBarWidget, Disposable, QuotaListener {
             label.text = "Synthetic: --/--"
             panel.toolTipText = "Synthetic quota (no data)"
         } else {
-            val reqStr = info.requests?.let { if (it % 1.0 == 0.0) it.toInt().toString() else String.format("%.2f", it) } ?: "--"
-            val limStr = info.limit?.let { if (it % 1.0 == 0.0) it.toInt().toString() else String.format("%.2f", it) } ?: "--"
+            val reqStr = info.requests ?: "--"
+            val limStr = info.limit ?: "--"
             label.text = "Synthetic: $reqStr/$limStr"
             panel.toolTipText = info.renewsAt?.let { "Renews at: $it" } ?: "Synthetic quota"
         }

@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 data class QuotaInfo(
-    val requests: Double?,
-    val limit: Double?,
+    val requests: String?,
+    val limit: String?,
     val renewsAt: String?
 )
 
@@ -108,13 +108,13 @@ class QuotaService : Disposable {
     companion object {
         val QUOTA_TOPIC = com.intellij.util.messages.Topic.create("SyntheticQuotaUpdated", QuotaListener::class.java)
 
-        private val LIMIT_PATTERN = Pattern.compile("\\\"limit\\\"\\s*:\\s*([0-9]+(?:\\\\.[0-9]+)?)")
-        private val REQUESTS_PATTERN = Pattern.compile("\\\"requests\\\"\\s*:\\s*([0-9]+(?:\\\\.[0-9]+)?)")
+        private val LIMIT_PATTERN = Pattern.compile("\\\"limit\\\"\\s*:\\s*(?:\\\"([^\\\"]*)\\\"|([^,}\\s]+))")
+        private val REQUESTS_PATTERN = Pattern.compile("\\\"requests\\\"\\s*:\\s*(?:\\\"([^\\\"]*)\\\"|([^,}\\s]+))")
         private val RENEWS_PATTERN = Pattern.compile("\\\"renewsAt\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"")
 
         fun parseQuota(json: String): QuotaInfo {
-            val limit = LIMIT_PATTERN.matcher(json).let { m -> if (m.find()) m.group(1)?.toDoubleOrNull() else null }
-            val requests = REQUESTS_PATTERN.matcher(json).let { m -> if (m.find()) m.group(1)?.toDoubleOrNull() else null }
+            val limit = LIMIT_PATTERN.matcher(json).let { m -> if (m.find()) m.group(1) ?: m.group(2) else null }
+            val requests = REQUESTS_PATTERN.matcher(json).let { m -> if (m.find()) m.group(1) ?: m.group(2) else null }
             val renewsAt = RENEWS_PATTERN.matcher(json).let { m -> if (m.find()) m.group(1) else null }
             return QuotaInfo(requests, limit, renewsAt)
         }
