@@ -26,6 +26,6 @@
         <applicationConfigurable instance="com.thesingular.syntheticquotatracker.SettingsConfigurable"
                                  displayName="Synthetic Quota Tracker"/>
 
-        <statusBarWidgetFactory implementation="com.thesingular.syntheticquotatracker.QuotaStatusWidgetFactory"/>
+        <statusBarWidgetFactory id="synthetic.quota.widget" implementation="com.thesingular.syntheticquotatracker.QuotaStatusWidgetFactory"/>
     </extensions>
 </idea-plugin>

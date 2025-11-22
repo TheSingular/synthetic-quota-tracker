@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.thesingular"
-version = "1.2"
+version = "1.2.1"
 
 repositories {
     mavenCentral()

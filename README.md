@@ -8,6 +8,9 @@
 
 ---
 
+##  Disclaimer: I am not affiliated with [Synthetic.new](https://synthetic.new) in any way.
+
+
 ## ✨ Features
 
 *   **Real-time Status Bar Widget**: View your current request count and total limit at a glance (e.g., `Synthetic: 150/1000`).
@@ -90,4 +93,4 @@ This project strictly requires **Java 17**.
 ## 🙏 Acknowledgments
 
 * I was inspired by [VSCode Synthetic Quota](https://marketplace.visualstudio.com/items?itemName=nrw.vscode-synthetic-quota) extension to make this plugin for JetBrains IDEs. Thanks for the initial idea!
-* Also thanks to the [Synthetic](https://synthetic.new) team for providing the API. Disclaimer: I am not affiliated with them in any way.
+* Also thanks to the [Synthetic](https://synthetic.new) team for providing the API.
