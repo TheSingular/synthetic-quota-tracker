@@ -39,7 +39,7 @@ class SettingsConfigurable : Configurable {
         // Interval label and field
         c.gridx = 0
         c.gridy = 1
-        p.add(JLabel("Update interval (seconds):"), c)
+        p.add(JLabel("Update interval (minutes):"), c)
         c.gridx = 1
         intervalField = JBTextField()
         p.add(intervalField, c)
@@ -53,8 +53,8 @@ class SettingsConfigurable : Configurable {
         val settings = SettingsState.getInstance()
         val tokenText = String(tokenField?.password ?: CharArray(0))
         val intervalText = intervalField?.text?.trim().orEmpty()
-        val intervalVal = intervalText.toIntOrNull() ?: settings.intervalSeconds
-        return tokenText != (settings.apiToken ?: "") || intervalVal != settings.intervalSeconds
+        val intervalVal = intervalText.toIntOrNull() ?: settings.intervalMinutes
+        return tokenText != (settings.apiToken ?: "") || intervalVal != settings.intervalMinutes
     }
 
     override fun apply() {
@@ -65,14 +65,14 @@ class SettingsConfigurable : Configurable {
             ?: throw ConfigurationException("Interval must be a number")
         if (intervalVal <= 0) throw ConfigurationException("Interval must be positive")
         settings.apiToken = tokenText
-        settings.intervalSeconds = intervalVal
+        settings.intervalMinutes = intervalVal
         notifySettingsChanged()
     }
 
     override fun reset() {
         val settings = SettingsState.getInstance()
         tokenField?.text = settings.apiToken ?: ""
-        intervalField?.text = settings.intervalSeconds.toString()
+        intervalField?.text = settings.intervalMinutes.toString()
     }
 
     override fun disposeUIResources() {

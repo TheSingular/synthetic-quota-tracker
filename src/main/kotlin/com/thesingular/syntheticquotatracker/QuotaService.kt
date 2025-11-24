@@ -61,14 +61,14 @@ class QuotaService : Disposable {
 
     private fun reschedule() {
         future?.cancel(false)
-        val interval = (SettingsState.getInstance().intervalSeconds).coerceAtLeast(5)
+        val interval = (SettingsState.getInstance().intervalMinutes).coerceAtLeast(5)
         future = AppExecutorUtil.getAppScheduledExecutorService().scheduleWithFixedDelay({
             try {
                 pollOnce()
             } catch (t: Throwable) {
                 log.warn("Quota poll failed", t)
             }
-        }, 0, interval.toLong(), TimeUnit.SECONDS)
+        }, 0, interval.toLong(), TimeUnit.MINUTES)
     }
 
     private fun pollOnce() {

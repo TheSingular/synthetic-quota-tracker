@@ -19,7 +19,7 @@ import com.intellij.util.messages.Topic
 )
 class SettingsState : PersistentStateComponent<SettingsState.State> {
     data class State(
-        var intervalSeconds: Int = 60,
+        var intervalMinutes: Int = 5,
     )
 
     private var myState = State()
@@ -40,9 +40,9 @@ class SettingsState : PersistentStateComponent<SettingsState.State> {
             PasswordSafe.instance.set(CREDENTIAL_ATTRIBUTES, credentials)
         }
 
-    var intervalSeconds: Int
-        get() = myState.intervalSeconds
-        set(value) { myState.intervalSeconds = value }
+    var intervalMinutes: Int
+        get() = myState.intervalMinutes
+        set(value) { myState.intervalMinutes = value }
 
     companion object {
         fun getInstance(): SettingsState = service()
