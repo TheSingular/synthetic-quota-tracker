@@ -61,14 +61,14 @@ class QuotaService : Disposable {
 
     private fun reschedule() {
         future?.cancel(false)
-        val interval = (SettingsState.getInstance().intervalMinutes).coerceAtLeast(5)
+        val interval = (SettingsState.getInstance().intervalSeconds)
         future = AppExecutorUtil.getAppScheduledExecutorService().scheduleWithFixedDelay({
             try {
                 pollOnce()
             } catch (t: Throwable) {
                 log.warn("Quota poll failed", t)
             }
-        }, 0, interval.toLong(), TimeUnit.MINUTES)
+        }, 0, interval.toLong(), TimeUnit.SECONDS)
     }
 
     private fun pollOnce() {
@@ -97,7 +97,9 @@ class QuotaService : Disposable {
 
     private fun updateInfo(info: QuotaInfo?) {
         lastInfo = info
-        ApplicationManager.getApplication().messageBus.syncPublisher(QUOTA_TOPIC).onQuotaUpdated(info)
+        ApplicationManager.getApplication().invokeLater {
+            ApplicationManager.getApplication().messageBus.syncPublisher(QUOTA_TOPIC).onQuotaUpdated(info)
+        }
     }
 
     override fun dispose() {

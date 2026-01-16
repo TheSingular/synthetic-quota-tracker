@@ -13,9 +13,39 @@
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
     <description><![CDATA[
-        Shows your Synthetic API quota usage in the IDE status bar and updates it periodically.
+        Tracks and displays your Synthetic API quota usage in the IDE status bar.
+        Features:
+        <ul>
+            <li>Real-time quota monitoring in the status bar</li>
+            <li>Configurable update interval</li>
+            <li>Secure API token storage</li>
+            <li>One-click access to settings from the widget</li>
+        </ul>
     ]]></description>
 
+    <change-notes><![CDATA[
+        <h2>Version 1.3</h2>
+        <ul>
+            <li>Fixed an issue where the widget color would change during updates by ensuring UI updates occur on the Event Dispatch Thread (EDT)</li>
+            <li>Improved widget stability by disabling focus on its components</li>
+            <li>Fixed a typo in internal settings state</li>
+        </ul>
+
+        <h2>Version 1.2.3</h2>
+        <ul>
+            <li>Changed update interval unit from minutes to seconds</li>
+            <li>Set the default interval to 30 seconds</li>
+            <li>Enforced a minimum interval of 10 seconds (to prevent excessive API calls)</li>
+        </ul>
+        
+        <h2>Version 1.2.2</h2>
+        <ul>
+            <li>Initial release with basic quota tracking and widget functionality</li>
+            <li>Configurable update interval for real-time monitoring in minutes, default value is 5 minutes</li>
+            <li>Secure storage of API tokens for privacy</li>
+            <li>Easy access to settings from the status bar widget</li>
+        </ul>
+    ]]></change-notes>
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
@@ -23,9 +53,21 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <applicationConfigurable instance="com.thesingular.syntheticquotatracker.SettingsConfigurable"
-                                 displayName="Synthetic Quota Tracker"/>
+        <statusBarWidgetFactory id="synthetic.quota.widget"
+                                 implementation="com.thesingular.syntheticquotatracker.QuotaStatusWidgetFactory"/>
 
-        <statusBarWidgetFactory id="synthetic.quota.widget" implementation="com.thesingular.syntheticquotatracker.QuotaStatusWidgetFactory"/>
+        <applicationConfigurable instance="com.thesingular.syntheticquotatracker.SettingsConfigurable"
+                                 id="com.thesingular.syntheticquotatracker.SettingsConfigurable"
+                                 displayName="Synthetic Quota Tracker"
+                                 groupId="tools"/>
     </extensions>
+
+    <actions>
+        <action id="synthetic.quota.settings"
+                class="com.thesingular.syntheticquotatracker.SettingsAction"
+                text="Synthetic Quota Tracker Settings"
+                description="Configure Synthetic Quota Tracker settings">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>

@@ -1,6 +1,7 @@
 package com.thesingular.syntheticquotatracker
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.CustomStatusBarWidget
@@ -8,9 +9,10 @@ import com.intellij.openapi.wm.StatusBar
 import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.options.ShowSettingsUtil
+import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBPanel
+import java.awt.BorderLayout
 import java.awt.Cursor
-import javax.swing.JLabel
-import javax.swing.JPanel
 
 class QuotaStatusWidgetFactory : StatusBarWidgetFactory {
     override fun getId(): String = "synthetic.quota.widget"
@@ -30,8 +32,12 @@ class QuotaStatusWidgetFactory : StatusBarWidgetFactory {
 
 class QuotaStatusWidget : CustomStatusBarWidget, Disposable, QuotaListener {
     private var statusBar: StatusBar? = null
-    private val label = JLabel("Synthetic: --/--")
-    private val panel = JPanel().apply {
+    private val label = JBLabel("Synthetic: --/--").apply {
+        isFocusable = false
+    }
+    private val panel = JBPanel<JBPanel<*>>(BorderLayout()).apply {
+        isOpaque = false
+        isFocusable = false
         add(label)
         toolTipText = "Synthetic quota"
         cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
@@ -58,6 +64,7 @@ class QuotaStatusWidget : CustomStatusBarWidget, Disposable, QuotaListener {
     }
 
     override fun onQuotaUpdated(info: QuotaInfo?) {
+        if (statusBar == null) return
         if (info == null) {
             label.text = "Synthetic: --/--"
             panel.toolTipText = "Synthetic quota (no data)"

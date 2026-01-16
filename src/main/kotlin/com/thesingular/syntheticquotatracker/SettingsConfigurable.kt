@@ -11,6 +11,9 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 
+// Import the notifySettingsChanged function
+import com.thesingular.syntheticquotatracker.notifySettingsChanged
+
 class SettingsConfigurable : Configurable {
     private var panel: JPanel? = null
     private var tokenField: JBPasswordField? = null
@@ -39,7 +42,7 @@ class SettingsConfigurable : Configurable {
         // Interval label and field
         c.gridx = 0
         c.gridy = 1
-        p.add(JLabel("Update interval (minutes):"), c)
+        p.add(JLabel("Update interval (seconds):"), c)
         c.gridx = 1
         intervalField = JBTextField()
         p.add(intervalField, c)
@@ -53,8 +56,8 @@ class SettingsConfigurable : Configurable {
         val settings = SettingsState.getInstance()
         val tokenText = String(tokenField?.password ?: CharArray(0))
         val intervalText = intervalField?.text?.trim().orEmpty()
-        val intervalVal = intervalText.toIntOrNull() ?: settings.intervalMinutes
-        return tokenText != (settings.apiToken ?: "") || intervalVal != settings.intervalMinutes
+        val intervalVal = intervalText.toIntOrNull() ?: settings.intervalSeconds
+        return tokenText != (settings.apiToken ?: "") || intervalVal != settings.intervalSeconds
     }
 
     override fun apply() {
@@ -63,16 +66,16 @@ class SettingsConfigurable : Configurable {
         val intervalText = intervalField?.text?.trim().orEmpty()
         val intervalVal = intervalText.toIntOrNull()
             ?: throw ConfigurationException("Interval must be a number")
-        if (intervalVal <= 0) throw ConfigurationException("Interval must be positive")
+        if (intervalVal < 10) throw ConfigurationException("Interval must be at least 10")
         settings.apiToken = tokenText
-        settings.intervalMinutes = intervalVal
+        settings.intervalSeconds = intervalVal
         notifySettingsChanged()
     }
 
     override fun reset() {
         val settings = SettingsState.getInstance()
         tokenField?.text = settings.apiToken ?: ""
-        intervalField?.text = settings.intervalMinutes.toString()
+        intervalField?.text = settings.intervalSeconds.toString()
     }
 
     override fun disposeUIResources() {
