@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.thesingular"
-version = "1.2.2"
+version = "1.3"
 
 repositories {
     mavenCentral()
@@ -31,10 +31,6 @@ intellijPlatform {
         ideaVersion {
             sinceBuild = "251"
         }
-
-        changeNotes = """
-            Initial version
-        """.trimIndent()
     }
 }
 
