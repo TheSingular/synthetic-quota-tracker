@@ -20,6 +20,7 @@ import com.intellij.util.messages.Topic
 class SettingsState : PersistentStateComponent<SettingsState.State> {
     data class State(
         var intervalSeconds: Int = 30,
+        var dateFormat: String = "LOCALE" // LOCALE, ISO, or custom pattern
     )
 
     private var myState = State()
@@ -44,6 +45,10 @@ class SettingsState : PersistentStateComponent<SettingsState.State> {
         get() = myState.intervalSeconds
         set(value) { myState.intervalSeconds = value }
 
+    var dateFormat: String
+        get() = myState.dateFormat
+        set(value) { myState.dateFormat = value }
+
     companion object {
         fun getInstance(): SettingsState = service()
 
@@ -53,6 +58,9 @@ class SettingsState : PersistentStateComponent<SettingsState.State> {
         private val CREDENTIAL_ATTRIBUTES = CredentialAttributes(
             generateServiceName("SyntheticQuotaTracker", "apiToken")
         )
+
+        const val DATE_FORMAT_LOCALE = "LOCALE"
+        const val DATE_FORMAT_ISO = "ISO"
     }
 }
 

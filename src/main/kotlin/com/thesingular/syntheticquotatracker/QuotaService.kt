@@ -11,14 +11,23 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
-data class QuotaInfo(
-    val requests: String?,
-    val limit: String?,
+data class QuotaSection(
+    val requests: Double?,
+    val limit: Double?,
     val renewsAt: String?
+)
+
+data class QuotaInfo(
+    val subscription: QuotaSection?,
+    val search: QuotaSection?,
+    val toolCalls: QuotaSection?
 )
 
 interface QuotaListener {
@@ -110,15 +119,70 @@ class QuotaService : Disposable {
     companion object {
         val QUOTA_TOPIC = com.intellij.util.messages.Topic.create("SyntheticQuotaUpdated", QuotaListener::class.java)
 
-        private val LIMIT_PATTERN = Pattern.compile("\\\"limit\\\"\\s*:\\s*(?:\\\"([^\\\"]*)\\\"|([^,}\\s]+))")
-        private val REQUESTS_PATTERN = Pattern.compile("\\\"requests\\\"\\s*:\\s*(?:\\\"([^\\\"]*)\\\"|([^,}\\s]+))")
-        private val RENEWS_PATTERN = Pattern.compile("\\\"renewsAt\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"")
+        private val SUBSCRIPTION_PATTERN = Pattern.compile(
+            """"subscription"\s*:\s*\{[^}]*"limit"\s*:\s*(?:"([^"]*)"|([^,}\s]+))[^}]*"requests"\s*:\s*(?:"([^"]*)"|([^,}\s]+))[^}]*"renewsAt"\s*:\s*"([^"]+)"""",
+            Pattern.DOTALL
+        )
+        private val SEARCH_PATTERN = Pattern.compile(
+            """"search"\s*:\s*\{[^}]*"hourly"\s*:\s*\{[^}]*"limit"\s*:\s*(?:"([^"]*)"|([^,}\s]+))[^}]*"requests"\s*:\s*(?:"([^"]*)"|([^,}\s]+))[^}]*"renewsAt"\s*:\s*"([^"]+)"""",
+            Pattern.DOTALL
+        )
+        private val TOOLCALLS_PATTERN = Pattern.compile(
+            """"toolCalls"\s*:\s*\{[^}]*"limit"\s*:\s*(?:"([^"]*)"|([^,}\s]+))[^}]*"requests"\s*:\s*(?:"([^"]*)"|([^,}\s]+))[^}]*"renewsAt"\s*:\s*"([^"]+)"""",
+            Pattern.DOTALL
+        )
 
         fun parseQuota(json: String): QuotaInfo {
-            val limit = LIMIT_PATTERN.matcher(json).let { m -> if (m.find()) m.group(1) ?: m.group(2) else null }
-            val requests = REQUESTS_PATTERN.matcher(json).let { m -> if (m.find()) m.group(1) ?: m.group(2) else null }
-            val renewsAt = RENEWS_PATTERN.matcher(json).let { m -> if (m.find()) m.group(1) else null }
-            return QuotaInfo(requests, limit, renewsAt)
+            val subscription = parseSection(SUBSCRIPTION_PATTERN.matcher(json))
+            val search = parseSection(SEARCH_PATTERN.matcher(json))
+            val toolCalls = parseSection(TOOLCALLS_PATTERN.matcher(json))
+            return QuotaInfo(subscription, search, toolCalls)
+        }
+
+        private fun parseSection(matcher: java.util.regex.Matcher): QuotaSection? {
+            return if (matcher.find()) {
+                val limit = (matcher.group(1) ?: matcher.group(2))?.toDoubleOrNull()
+                val requests = (matcher.group(3) ?: matcher.group(4))?.toDoubleOrNull()
+                val renewsAt = matcher.group(5)
+                QuotaSection(requests, limit, renewsAt)
+            } else null
+        }
+
+        fun formatToLocalTime(isoTimestamp: String?): String? {
+            if (isoTimestamp == null) return null
+            return try {
+                val instant = Instant.parse(isoTimestamp)
+                val localDateTime = instant.atZone(ZoneId.systemDefault())
+                val dateFormat = SettingsState.getInstance().dateFormat
+
+                when (dateFormat) {
+                    SettingsState.DATE_FORMAT_LOCALE -> {
+                        // Use locale-specific date/time format (short date + medium time)
+                        val locale = java.util.Locale.getDefault()
+                        val dateFormatter = DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.SHORT).withLocale(locale)
+                        val timeFormatter = DateTimeFormatter.ofLocalizedTime(java.time.format.FormatStyle.MEDIUM).withLocale(locale)
+                        "${localDateTime.format(timeFormatter)} ${localDateTime.format(dateFormatter)}"
+                    }
+                    SettingsState.DATE_FORMAT_ISO -> {
+                        // ISO 8601 format
+                        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                        localDateTime.format(formatter)
+                    }
+                    else -> {
+                        // Custom pattern
+                        try {
+                            val formatter = DateTimeFormatter.ofPattern(dateFormat)
+                            localDateTime.format(formatter)
+                        } catch (e: Exception) {
+                            // Fallback to ISO if custom pattern is invalid
+                            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                            localDateTime.format(formatter)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                isoTimestamp
+            }
         }
     }
 }
