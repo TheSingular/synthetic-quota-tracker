@@ -27,7 +27,7 @@ data class QuotaSection(
 data class QuotaInfo(
     val subscription: QuotaSection?,
     val search: QuotaSection?,
-    val toolCalls: QuotaSection?
+    val freeToolCalls: QuotaSection?
 )
 
 interface QuotaListener {
@@ -127,16 +127,16 @@ class QuotaService : Disposable {
             """"search"\s*:\s*\{[^}]*"hourly"\s*:\s*\{[^}]*"limit"\s*:\s*(?:"([^"]*)"|([^,}\s]+))[^}]*"requests"\s*:\s*(?:"([^"]*)"|([^,}\s]+))[^}]*"renewsAt"\s*:\s*"([^"]+)"""",
             Pattern.DOTALL
         )
-        private val TOOLCALLS_PATTERN = Pattern.compile(
-            """"toolCalls"\s*:\s*\{[^}]*"limit"\s*:\s*(?:"([^"]*)"|([^,}\s]+))[^}]*"requests"\s*:\s*(?:"([^"]*)"|([^,}\s]+))[^}]*"renewsAt"\s*:\s*"([^"]+)"""",
+        private val FREETOOLCALLS_PATTERN = Pattern.compile(
+            """"freeToolCalls"\s*:\s*\{[^}]*"limit"\s*:\s*(?:"([^"]*)"|([^,}\s]+))[^}]*"requests"\s*:\s*(?:"([^"]*)"|([^,}\s]+))[^}]*"renewsAt"\s*:\s*"([^"]+)"""",
             Pattern.DOTALL
         )
 
         fun parseQuota(json: String): QuotaInfo {
             val subscription = parseSection(SUBSCRIPTION_PATTERN.matcher(json))
             val search = parseSection(SEARCH_PATTERN.matcher(json))
-            val toolCalls = parseSection(TOOLCALLS_PATTERN.matcher(json))
-            return QuotaInfo(subscription, search, toolCalls)
+            val freeToolCalls = parseSection(FREETOOLCALLS_PATTERN.matcher(json))
+            return QuotaInfo(subscription, search, freeToolCalls)
         }
 
         private fun parseSection(matcher: java.util.regex.Matcher): QuotaSection? {

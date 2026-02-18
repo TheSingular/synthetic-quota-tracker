@@ -82,7 +82,7 @@ class QuotaStatusWidget : CustomStatusBarWidget, Disposable, QuotaListener {
             label.text = "Synthetic: Requests: $requestsStr | Search: $searchStr"
 
             // Check if any quota is low (< 10% remaining) and turn text red
-            val isLowQuota = isQuotaLow(info.subscription) || isQuotaLow(info.search) || isQuotaLow(info.toolCalls)
+            val isLowQuota = isQuotaLow(info.subscription) || isQuotaLow(info.search) || isQuotaLow(info.freeToolCalls)
             label.foreground = if (isLowQuota) Color.RED else null
 
             // Build tooltip with all sections
@@ -116,14 +116,14 @@ class QuotaStatusWidget : CustomStatusBarWidget, Disposable, QuotaListener {
             }
             tooltipBuilder.append("<br><br>")
 
-            // Discounted Tool Calls section (toolCalls)
-            tooltipBuilder.append("<b>Discounted Tool Calls</b><br>")
-            if (info.toolCalls != null) {
-                val remaining = calculateRemaining(info.toolCalls.requests, info.toolCalls.limit)
-                tooltipBuilder.append("&nbsp;&nbsp;Used: ${formatNumber(info.toolCalls.requests) ?: "--"}<br>")
-                tooltipBuilder.append("&nbsp;&nbsp;Limit: ${formatNumber(info.toolCalls.limit) ?: "--"}<br>")
+            // Free Tool Calls section (freeToolCalls)
+            tooltipBuilder.append("<b>Free Tool Calls</b><br>")
+            if (info.freeToolCalls != null) {
+                val remaining = calculateRemaining(info.freeToolCalls.requests, info.freeToolCalls.limit)
+                tooltipBuilder.append("&nbsp;&nbsp;Used: ${formatNumber(info.freeToolCalls.requests) ?: "--"}<br>")
+                tooltipBuilder.append("&nbsp;&nbsp;Limit: ${formatNumber(info.freeToolCalls.limit) ?: "--"}<br>")
                 tooltipBuilder.append("&nbsp;&nbsp;Remaining: ${formatNumber(remaining) ?: "--"}<br>")
-                val renewsLocal = QuotaService.formatToLocalTime(info.toolCalls.renewsAt)
+                val renewsLocal = QuotaService.formatToLocalTime(info.freeToolCalls.renewsAt)
                 tooltipBuilder.append("&nbsp;&nbsp;Renews: ${renewsLocal ?: "--"}")
             } else {
                 tooltipBuilder.append("&nbsp;&nbsp;No data")

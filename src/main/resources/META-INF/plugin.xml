@@ -27,6 +27,12 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <h2>Version 1.4.1</h2>
+        <ul>
+            <li>Fixed API field name from "toolCalls" to "freeToolCalls" to match updated API response</li>
+            <li>Updated tooltip label from "Discounted Tool Calls" to "Free Tool Calls"</li>
+        </ul>
+
         <h2>Version 1.4</h2>
         <ul>
             <li>Updated to support new API quota format with subscription, search, and toolCalls sections</li>
